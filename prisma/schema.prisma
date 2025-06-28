@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  category    Category
+  material    String?
+  weight      Float?      // in grams
+  dimensions  String?     // e.g., "2.5cm x 1.8cm"
+  gemstone    String?     // e.g., "Diamond", "Ruby", etc.
+  images      String[]    // Array of image URLs
+  stock       Int         @default(0)
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("products")
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum Category {
+  RINGS
+  NECKLACES
+  EARRINGS
+  BRACELETS
+  WATCHES
+  BROOCHES
+  PENDANTS
+  SETS
+  OTHER
+}
