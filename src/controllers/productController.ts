@@ -163,6 +163,55 @@ export const getProductById = async (
   }
 };
 
+export const getProductsByCategory = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { category } = req.params;
+    const { page = "1", limit = "10" } = req.query;
+
+    const pageNum = parseInt(page as string);
+    const limitNum = parseInt(limit as string);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where: {
+          category: category.toUpperCase(),
+          isActive: true,
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limitNum,
+      }),
+      prisma.product.count({
+        where: {
+          category: category.toUpperCase(),
+          isActive: true,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limitNum);
+
+    res.status(200).json(
+      formatResponse(true, "Products retrieved successfully", {
+        products,
+        pagination: {
+          currentPage: pageNum,
+          totalPages,
+          total,
+          limit: limitNum,
+        },
+      })
+    );
+  } catch (error) {
+    console.error("Get products by category error:", error);
+    res.status(500).json(formatResponse(false, "Internal server error"));
+  }
+};
+
 export const updateProduct = async (
   req: Request<{ id: string }, {}, UpdateProductRequest>,
   res: Response
@@ -227,55 +276,6 @@ export const deleteProduct = async (
     res.status(200).json(formatResponse(true, "Product deleted successfully"));
   } catch (error) {
     console.error("Delete product error:", error);
-    res.status(500).json(formatResponse(false, "Internal server error"));
-  }
-};
-
-export const getProductsByCategory = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const { category } = req.params;
-    const { page = "1", limit = "10" } = req.query;
-
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
-    const skip = (pageNum - 1) * limitNum;
-
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where: {
-          category: category.toUpperCase(),
-          isActive: true,
-        },
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limitNum,
-      }),
-      prisma.product.count({
-        where: {
-          category: category.toUpperCase(),
-          isActive: true,
-        },
-      }),
-    ]);
-
-    const totalPages = Math.ceil(total / limitNum);
-
-    res.status(200).json(
-      formatResponse(true, "Products retrieved successfully", {
-        products,
-        pagination: {
-          currentPage: pageNum,
-          totalPages,
-          total,
-          limit: limitNum,
-        },
-      })
-    );
-  } catch (error) {
-    console.error("Get products by category error:", error);
     res.status(500).json(formatResponse(false, "Internal server error"));
   }
 };
