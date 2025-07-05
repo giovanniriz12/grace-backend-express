@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { signup, login, getProfile } from "../controllers/authController";
+import {
+  signup,
+  login,
+  getProfile,
+  logout,
+} from "../controllers/authController";
 import { authenticateToken } from "../middleware/auth";
 
 const router = Router();
@@ -10,5 +15,6 @@ router.post("/login", login);
 
 // Protected routes
 router.get("/profile", authenticateToken, getProfile);
+router.post("/logout", authenticateToken, logout);
 
 export default router;

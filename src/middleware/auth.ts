@@ -6,27 +6,29 @@ export const authenticateToken = (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-) => {
-  const authHeader = req.headers["authorization"];
+): void => {
+  const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
 
   if (!token) {
-    return res.status(401).json(formatResponse(false, "Access token required"));
+    res.status(401).json(formatResponse(false, "Access token required"));
+    return;
   }
 
   try {
     const decoded = verifyToken(token);
-    req.user = {
-      id: decoded.id,
-      email: decoded.email,
-      username: decoded.username,
-      role: decoded.role,
-    };
+    req.user = decoded;
     next();
   } catch (error) {
-    return res
-      .status(403)
-      .json(formatResponse(false, "Invalid or expired token"));
+    if (
+      error instanceof Error &&
+      error.message === "Token has been invalidated"
+    ) {
+      res.status(401).json(formatResponse(false, "Token has been invalidated"));
+    } else {
+      res.status(403).json(formatResponse(false, "Invalid or expired token"));
+    }
+    return;
   }
 };
 

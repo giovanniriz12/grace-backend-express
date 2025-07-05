@@ -5,13 +5,11 @@ import {
   comparePassword,
   generateToken,
   formatResponse,
+  blacklistToken,
 } from "../utils/auth";
 import { AuthenticatedRequest } from "../types";
 
-export const signup = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const signup = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, username, password, role = "ADMIN" } = req.body;
 
@@ -88,10 +86,7 @@ export const signup = async (
   }
 };
 
-export const login = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
@@ -169,9 +164,39 @@ export const getProfile = async (
       return;
     }
 
-    res.status(200).json(formatResponse(true, "Profile retrieved successfully", user));
+    res
+      .status(200)
+      .json(formatResponse(true, "Profile retrieved successfully", user));
   } catch (error) {
     console.error("Get profile error:", error);
+    res.status(500).json(formatResponse(false, "Internal server error"));
+  }
+};
+
+export const logout = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    // Extract token from Authorization header
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) {
+      res.status(400).json(formatResponse(false, "No token provided"));
+      return;
+    }
+
+    // Add token to blacklist
+    blacklistToken(token);
+
+    res.status(200).json(
+      formatResponse(true, "Logout successful", {
+        message: "Token has been invalidated successfully",
+      })
+    );
+  } catch (error) {
+    console.error("Logout error:", error);
     res.status(500).json(formatResponse(false, "Internal server error"));
   }
 };

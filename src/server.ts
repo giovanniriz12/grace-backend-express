@@ -136,4 +136,11 @@ app.listen(PORT, () => {
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
 });
 
+// Clean up expired tokens from blacklist every hour
+setInterval(() => {
+  const { cleanupBlacklist } = require("./utils/auth");
+  cleanupBlacklist();
+  console.log("🧹 Cleaned up expired tokens from blacklist");
+}, 60 * 60 * 1000); // 1 hour
+
 export default app;
