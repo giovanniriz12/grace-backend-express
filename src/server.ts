@@ -4,6 +4,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 
 // Load environment variables
 dotenv.config();
@@ -21,13 +23,53 @@ app.use(helmet());
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+    origin: [
+      "http://localhost:3000", // Next.js default port
+      "http://localhost:3001", // Alternative Next.js port
+      "http://localhost:4000", // Another common port
+      process.env.CORS_ORIGIN || "http://localhost:3000",
+    ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
+// Create logs directory if it doesn't exist
+const logsDir = path.join(__dirname, "../logs");
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
+
+// Create write streams for log files
+const accessLogStream = fs.createWriteStream(
+  path.join(logsDir, "access.log"),
+  { flags: "a" } // append mode
+);
+
+const errorLogStream = fs.createWriteStream(
+  path.join(logsDir, "error.log"),
+  { flags: "a" } // append mode
+);
+
 // Logging middleware
-app.use(morgan("combined"));
+if (process.env.NODE_ENV === "development") {
+  // Console logging for development (colored)
+  app.use(morgan("dev"));
+  // Also save to file in development
+  app.use(morgan("combined", { stream: accessLogStream }));
+} else {
+  // Production: only file logging
+  app.use(morgan("combined", { stream: accessLogStream }));
+
+  // Error logging for production
+  app.use(
+    morgan("combined", {
+      stream: errorLogStream,
+      skip: (req, res) => res.statusCode < 400,
+    })
+  );
+}
 
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
