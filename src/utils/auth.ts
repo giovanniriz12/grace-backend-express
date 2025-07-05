@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { JWTPayload } from "../types";
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret";
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1d";
 
 export const generateToken = (
   payload: Omit<JWTPayload, "iat" | "exp">
