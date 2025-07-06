@@ -52,7 +52,9 @@ export interface CreateProductRequest {
   isActive?: boolean;
 }
 
-export interface UpdateProductRequest extends Partial<CreateProductRequest> {}
+export interface UpdateProductRequest extends Partial<CreateProductRequest> {
+  replaceImages?: boolean; // New field to determine if we should replace all images
+}
 
 export interface ApiResponse<T = any> {
   success: boolean;

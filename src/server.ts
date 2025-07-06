@@ -76,6 +76,9 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Serve static files for uploaded images
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
 // Root route
 app.get("/", (req, res) => {
   res.status(200).json({

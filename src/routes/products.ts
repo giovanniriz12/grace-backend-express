@@ -8,6 +8,7 @@ import {
   getProductsByCategory,
 } from "../controllers/productController";
 import { authenticateToken, requireRole } from "../middleware/auth";
+import { uploadImages } from "../middleware/upload";
 
 const router = Router();
 
@@ -21,12 +22,14 @@ router.post(
   "/",
   authenticateToken,
   requireRole(["ADMIN", "SUPER_ADMIN"]),
+  uploadImages, // Add image upload middleware
   createProduct
 );
 router.put(
   "/:id",
   authenticateToken,
   requireRole(["ADMIN", "SUPER_ADMIN"]),
+  uploadImages, // Add image upload middleware for updates
   updateProduct
 );
 router.delete(

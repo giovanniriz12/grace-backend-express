@@ -6,4 +6,8 @@ node_modules
 logs/
 *.log
 
+# User uploaded files (don't commit these!)
+uploads/
+uploads/**/*
+
 /generated/prisma
